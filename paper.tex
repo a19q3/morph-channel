@@ -900,6 +900,46 @@ If the factory transition family is not fixed and committed before the local pro
 Different factory paths authorise different effects: a conservative update, a local exit, a single-right reduction, a sparse update, or a splice all have different admissible touched rights and value consequences. If the proof body determines its own authority class, an adversary may seek an alternative interpretation with weaker checks. A bounded outer claim fixes the transition family and commits to the body before local validity is evaluated, so the proof is checked only under the intended authority rule.
 \end{proof}
 
+\section{Factory Acceptance Requirements}
+
+The factory construction should not be treated as accepted merely because one
+representative factory path succeeds. A candidate deployment must pass an
+end-to-end devnet acceptance matrix in which every value-bearing factory
+business flow is exercised as a committed transition, and every attack-shaped
+factory rejection is checked against its intended error class. This section
+states that matrix at protocol level. It deliberately does not prescribe a
+particular transaction builder, storage format, or proof encoding.
+
+\begin{table}[htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{L{0.25\linewidth}L{0.39\linewidth}L{0.25\linewidth}}
+\toprule
+Factory flow family & Required positive acceptance evidence & Required rejection evidence \\
+\midrule
+Factory lifecycle & factory creation; all-participant state advance; local child-channel materialisation; child publication; child finalisation & stale, duplicate, or unauthorised state authority must not become value authority \\
+Reduced rights & bounded right decrease; tight near-zero decrease; sparse single-right update & a locality proof must not authorise value creation or unrelated-right mutation \\
+CKB reduced exit & reserve-claim release into a local child channel; asymmetric participant capacity distribution & released CKB and remaining reserve must match the authorised descriptor exactly \\
+Typed reduced exit & partial xUDT release with factory-vault change; full xUDT release; one-sided xUDT settlement & mismatched typed settlement output or factory-vault typed change must be rejected \\
+Conservative factory splice & CKB splice-in and splice-out; asymmetric CKB capacity variants; xUDT splice-in and splice-out; one-sided xUDT variants & vault descriptors and per-asset deltas must bind the realised Cell shape, not merely the aggregate amount \\
+Reduced factory splice & CKB reduced splice-in and splice-out; asymmetric CKB variants; xUDT reduced splice-in and splice-out; one-sided xUDT variants & sparse locality evidence must be checked under the admitted transition family only \\
+Negative recovery continuity & a valid later factory or child-channel transition remains publishable after an expected rejection & attack-shaped typed materialisation failures must reject without poisoning later progress \\
+\bottomrule
+\end{tabular}
+\caption{Factory acceptance matrix. Every row is a required devnet acceptance family for a candidate deployment of the factory protocol.}
+\label{tab:factory-acceptance}
+\end{table}
+
+The acceptance rule is strict: every positive row in
+Table~\ref{tab:factory-acceptance} must be represented by committed on-chain
+evidence, and every negative row must be represented by an exact rejection
+class. A paper proof of non-interference is therefore not enough on its own. It
+must be accompanied by acceptance evidence showing that conservative paths,
+reduced paths, CKB paths, typed-asset paths, asymmetric value distributions, and
+one-sided typed distributions all preserve the same authority and conservation
+boundaries.
+
 \section{Challenge-Window Semantics}
 
 The challenge window is not a paper constant. It is a deployment parameter derived from CKB confirmation behaviour and watchtower liveness.
@@ -1078,6 +1118,7 @@ This draft does not claim empirical closure. It defines a benchmark agenda:
   \item vault-lock rejection tests for spends lacking current state evidence;
   \item reserve refund, occupied-capacity, business-CKB, and per-xUDT conservation edge cases;
   \item factory envelope-admission tests for transition-family confusion, body-bound violations, and digest mismatch;
+  \item factory acceptance evidence for every lifecycle, reduced-rights, reduced-exit, conservative-splice, reduced-splice, asymmetric, and one-sided typed path in Table~\ref{tab:factory-acceptance};
   \item executable negative tests corresponding to the audit matrix in Appendix~\ref{app:audit-matrix};
   \item comparison between full plaintext factory disclosure and local proof verification.
 \end{enumerate}
